@@ -1,3 +1,11 @@
+---
+title: Aegis Detector
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+---
 # Aegis - Scam & AI Content Detector
 
 ## 🌟 STAR Summary
