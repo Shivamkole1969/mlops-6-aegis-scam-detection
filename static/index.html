@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis | AI & Scam Content Detector</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-container">
+        <header>
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <h1>Aegis <span>Detector</span></h1>
+            </div>
+            <button id="settingsBtn" class="btn outline">API Settings</button>
+        </header>
+
+        <main>
+            <div class="hero">
+                <h2>Protect Yourself From Generative AI Scams</h2>
+                <p>Paste suspicious texts, links, bank SMS, or upload screenshots to instantly detect deepfakes, phishing, and generative AI content using Groq LLM pipelines.</p>
+            </div>
+
+            <div class="analyzer-box">
+                <div class="tabs">
+                    <button class="tab active" data-target="text-input">Text / Link</button>
+                    <button class="tab" data-target="image-input">Upload Media</button>
+                </div>
+
+                <div class="input-area active" id="text-input">
+                    <textarea id="textContent" placeholder="Paste the suspicious link, bank message, or email here..."></textarea>
+                </div>
+
+                <div class="input-area" id="image-input">
+                    <div class="upload-zone" id="uploadZone">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <p>Drag & Drop screenshot or click to browse</p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                    <div id="fileNameDisplay" class="file-name"></div>
+                </div>
+
+                <button id="analyzeBtn" class="btn primary full-width">
+                    <span class="btn-text">Run Security Analysis</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultBox" class="result-box hidden">
+                <div class="risk-badge" id="riskBadge">High Risk</div>
+                <div class="grid-stats">
+                    <div class="stat">
+                        <span class="label">AI Generated?</span>
+                        <span class="value" id="aiGeneratedStatus">Yes</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Scam Detected?</span>
+                        <span class="value" id="scamDetectedStatus">Yes</span>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h3>Analysis Breakdown:</h3>
+                    <p id="analysisText">Loading explanation...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- API Key Modal -->
+    <div id="apiModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <span class="close-btn">&times;</span>
+            <h3>Custom API Configuration</h3>
+            <p>Aegis provides built-in Groq keys. However, for private instances, you can temporarily supply your own API Key.</p>
+            <input type="password" id="userApiKey" placeholder="gsk_YourAPIKeyHere...">
+            <button id="saveApiBtn" class="btn primary">Save Configuration</button>
+            <div id="apiStatus" class="api-status"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
