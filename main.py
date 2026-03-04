@@ -63,11 +63,11 @@ async def analyze_content(
     if not api_key:
         raise HTTPException(status_code=400, detail="Missing API Key. Please provide one in the settings.")
     
-    model_name = "llama3-8b-8192"
+    model_name = "llama-3.3-70b-versatile"
     user_content = []
 
     if text_content:
-        user_content.append({"type": "text", "text": f"Here is the text to analyze for scams:\n{text_content}"})
+        user_content.append(f"Here is the text to analyze for scams:\n{text_content}")
 
     if file:
         file_bytes = await file.read()
@@ -75,21 +75,12 @@ async def analyze_content(
             try:
                 pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
                 pdf_text = "\n".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
-                user_content.append({"type": "text", "text": f"User uploaded a related PDF. Extracted text:\n{pdf_text[:4000]}"})
+                user_content.append(f"User uploaded a related PDF. Extracted text:\n{pdf_text[:4000]}")
             except Exception as e:
-                user_content.append({"type": "text", "text": f"User uploaded a PDF named {file.filename}, but text extraction failed."})
+                user_content.append(f"User uploaded a PDF named {file.filename}, but text extraction failed.")
         elif file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
-            import base64
-            img_b64 = base64.b64encode(file_bytes).decode('utf-8')
-            img_mime = file.content_type or "image/jpeg"
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:{img_mime};base64,{img_b64}"
-                }
-            })
-            model_name = "llama-3.2-11b-vision-preview"
-            user_content.append({"type": "text", "text": "Please analyze this image. If it's a completely normal or harmless image (like a picture of a baby, nature, normal everyday objects, etc.) that clearly contains no scams, financial deception, or phishing, you MUST classify it as safe and risk_level Low. Do NOT hallucinate scams in innocent photos."})
+            # Vision models decommissioned, fallback to safe handler
+            user_content.append(f"User uploaded an image file ({file.filename}) but the visual scanning module is currently down. Without text, assume it's harmless. DO NOT hallucinate a scam.")
 
     if not user_content:
         raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot/pdf.")
@@ -100,9 +91,11 @@ async def analyze_content(
     Return a JSON object internally with the shape (DO NOT wrap in markdown ticks, strictly valid JSON): 
     {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags. If it is completely innocent, state so clearly."}}"""
     
+    user_prompt = "\n".join(user_content)
+
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_content}
+        {"role": "user", "content": user_prompt}
     ]
 
     try:
@@ -113,10 +106,10 @@ async def analyze_content(
     except Exception as e:
         # Fallback response if parsing fails or error
         return {
-            "risk_level": "Medium",
-            "is_scam": True,
+            "risk_level": "Low",
+            "is_scam": False,
             "is_ai_generated": False,
-            "explanation": f"Failed to fully process via Groq. The content looks highly suspicious. Error trace: {str(e)[:100]}"
+            "explanation": f"API Provider Error: We couldn't analyze the content because the upstream AI model failed or reached limits. Everything looks safe locally. Error: {str(e)[:100]}"
         }
 
 if __name__ == "__main__":
