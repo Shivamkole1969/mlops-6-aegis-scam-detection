@@ -87,9 +87,9 @@ async def analyze_content(
 
     system_prompt = f"""You are Aegis, a highly advanced cybersecurity AI designed to detect scams, phishing attempts, and AI-generated deceptive content. 
     Analyze the provided text, link description, or extracted image context.
-    CRITICAL CONTEXT: The user intercepted this content from the platform: '{platform}'. Keep platform-specific scam typologies in mind (e.g., WhatsApp crypto/job scams, Facebook marketplace clones, Instagram romance/giveaway scams).
+    CRITICAL CONTEXT: The user is likely from India and intercepted this from: '{platform}'. Keep Indian-specific scams heavily in mind (e.g., UPI payment fraud, SBI/HDFC fake KYC blocks, TRAI/DoT disconnection threats, SEBI fake trading groups, FedEx/Customs parcel scams, WhatsApp part-time job offers).
     Return a JSON object internally with the shape (DO NOT wrap in markdown ticks, strictly valid JSON): 
-    {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags. If it is completely innocent, state so clearly."}}"""
+    {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Brief 1-2 sentence explanation of why it is real or fake.", "action": "A very short, direct instruction on what the user should do next (e.g., Block the number, Do not click, Safe to proceed)."}}"""
     
     user_prompt = "\n".join(user_content)
 
@@ -109,7 +109,8 @@ async def analyze_content(
             "risk_level": "Low",
             "is_scam": False,
             "is_ai_generated": False,
-            "explanation": f"API Provider Error: We couldn't analyze the content because the upstream AI model failed or reached limits. Everything looks safe locally. Error: {str(e)[:100]}"
+            "explanation": f"API Provider Error: We couldn't analyze the content because the upstream AI model failed or reached limits. Everything looks safe locally. Error: {str(e)[:100]}",
+            "action": "Try again later or provide your own API key in Settings."
         }
 
 if __name__ == "__main__":

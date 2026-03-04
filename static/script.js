@@ -157,21 +157,25 @@ document.addEventListener('DOMContentLoaded', () => {
         fileNameDisplay.innerHTML = `<i class="fa-solid fa-file-image"></i> Captured: ${file.name}`;
     }
 
-    // 5. Modal Flow
+    // 5. Drawer Flow
     const apiModal = document.getElementById('apiModal');
     const aboutModal = document.getElementById('aboutModal');
 
     document.getElementById('settingsBtn').onclick = () => {
         apiModal.classList.remove('hidden');
-        gsap.fromTo(apiModal.querySelector('.modal-content'), { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" });
     };
     document.querySelector('#apiModal .close-btn').onclick = () => apiModal.classList.add('hidden');
 
     document.getElementById('aboutBtn').onclick = () => {
         aboutModal.classList.remove('hidden');
-        gsap.fromTo(aboutModal.querySelector('.modal-content'), { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" });
     };
     document.getElementById('closeAboutBtn').onclick = () => aboutModal.classList.add('hidden');
+
+    // Close drawers when clicking outside (on the backdrop)
+    window.addEventListener('click', (e) => {
+        if (e.target === apiModal) apiModal.classList.add('hidden');
+        if (e.target === aboutModal) aboutModal.classList.add('hidden');
+    });
 
     document.getElementById('saveApiBtn').onclick = () => {
         const key = document.getElementById('userApiKey').value.trim();
@@ -271,9 +275,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const scamStatus = document.getElementById('scamDetectedStatus');
         scamStatus.innerHTML = data.is_scam ? "<span style='color:#f87171'><i class='fa-solid fa-triangle-exclamation'></i> CONFIRMED SCAM</span>" : "<span style='color:#34d399'><i class='fa-solid fa-shield-check'></i> NEGATIVE</span>";
 
-        // Typewriter effect for explanation
+        // Typewriter effect for explanation & Action
         const explainEl = document.getElementById('analysisText');
+        const actionEl = document.getElementById('actionText');
         explainEl.textContent = "";
+        actionEl.textContent = "Processing action recommendations...";
 
         const chars = data.explanation.split("");
         let i = 0;
@@ -285,6 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
             } else {
                 clearInterval(typeInterval);
+                actionEl.textContent = data.action || "Please review context cautiously and do the needful.";
+                actionEl.parentElement.style.borderLeftColor = data.is_scam ? "#ef4444" : "#10b981";
+                actionEl.parentElement.querySelector('h4').style.color = data.is_scam ? "#ef4444" : "#10b981";
             }
         }, 15);
     };
