@@ -92,6 +92,14 @@ const init3DBackground = () => {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Expose Global Color Transition function for Results
+    window.transitionParticles = (isScam) => {
+        const targetColor = isScam ? new THREE.Color(0xef4444) : new THREE.Color(0x10b981); // Red or Green
+        // Particles rotate extremely fast violently for scam, or slow for safe
+        gsap.to(material.color, { r: targetColor.r, g: targetColor.g, b: targetColor.b, duration: 1.5, ease: "power2.out" });
+        gsap.to(material, { size: isScam ? 0.08 : 0.04, duration: 1 });
+    };
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -215,6 +223,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayResults = (data) => {
         resultBox.classList.remove('hidden');
+
+        // Trigger the 3D Background Pulse (Red or Green)
+        if (window.transitionParticles) window.transitionParticles(data.is_scam);
+
+        // Immersive Floating Text Animation over the screen
+        const overlay = document.getElementById('immersiveOverlay');
+        const overlayText = document.getElementById('immersiveText');
+        overlay.classList.remove('hidden');
+        overlayText.className = 'immersive-text ' + (data.is_scam ? 'text-scam' : 'text-safe');
+        overlayText.textContent = data.is_scam ? 'SCAM DETECTED' : 'SAFE & REAL';
+
+        gsap.fromTo(overlayText,
+            { scale: 0.3, opacity: 0, zIndex: 100 },
+            {
+                scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)",
+                onComplete: () => {
+                    gsap.to(overlayText, {
+                        scale: 2, opacity: 0, delay: 1.2, duration: 0.8, ease: "power2.in",
+                        onComplete: () => overlay.classList.add('hidden')
+                    });
+                }
+            }
+        );
 
         // Result GSAP Reveal
         gsap.fromTo(resultBox, { height: 0, opacity: 0 }, { height: "auto", opacity: 1, duration: 0.8, ease: "power3.out" });
