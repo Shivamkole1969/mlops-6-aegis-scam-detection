@@ -194,7 +194,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch('/api/analyze', { method: 'POST', body: formData });
-            if (!response.ok) throw new Error('API Execution Failed');
+            if (!response.ok) {
+                let err = "API Execution Failed";
+                try {
+                    const errData = await response.json();
+                    err = errData.detail || err;
+                } catch (e) { }
+                throw new Error(err);
+            }
 
             const data = await response.json();
             displayResults(data);
