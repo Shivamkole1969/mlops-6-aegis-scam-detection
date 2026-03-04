@@ -79,8 +79,18 @@ async def analyze_content(
             except Exception as e:
                 user_content.append(f"User uploaded a PDF named {file.filename}, but text extraction failed.")
         elif file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
-            # Vision models decommissioned, fallback to safe handler
-            user_content.append(f"User uploaded an image file ({file.filename}) but the visual scanning module is currently down. Without text, assume it's harmless. DO NOT hallucinate a scam.")
+            try:
+                import pytesseract
+                from PIL import Image
+                img = Image.open(io.BytesIO(file_bytes))
+                extracted_text = pytesseract.image_to_string(img).strip()
+                if extracted_text:
+                    user_content.append(f"User uploaded an image. OCR extracted this text from the image:\n{extracted_text[:3000]}\nAnalyze this extracted text for scams.")
+                else:
+                    user_content.append(f"User uploaded an image file ({file.filename}) but no readability/text was found in it (e.g. a normal photo). Assume it's harmless. DO NOT hallucinate a scam.")
+            except Exception as e:
+                # OCR failure fallback
+                user_content.append(f"User uploaded an image file ({file.filename}) but the text scanning module failed. Without explicit scam text, assume it's harmless. DO NOT hallucinate a scam.")
 
     if not user_content:
         raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot/pdf.")
