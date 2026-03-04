@@ -29,15 +29,14 @@ FALLBACK_KEYS = [k[::-1] for k in _rkeys]
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-def call_groq_api(messages, api_key):
+def call_groq_api(messages, api_key, model="llama3-8b-8192"):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     data = {
-        # Using a fast model for text processing
-        "model": "llama3-8b-8192", 
+        "model": model, 
         "messages": messages,
         "temperature": 0.2
     }
@@ -64,38 +63,50 @@ async def analyze_content(
     if not api_key:
         raise HTTPException(status_code=400, detail="Missing API Key. Please provide one in the settings.")
     
-    # In a real multimodal (vision) setup, we would run OCR or pass base64 image to an LlaVA/vision model
-    image_text = ""
+    model_name = "llama3-8b-8192"
+    user_content = []
+
+    if text_content:
+        user_content.append({"type": "text", "text": f"Here is the text to analyze for scams:\n{text_content}"})
+
     if file:
+        file_bytes = await file.read()
         if file.filename.lower().endswith('.pdf'):
             try:
-                pdf_reader = PyPDF2.PdfReader(io.BytesIO(await file.read()))
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
                 pdf_text = "\n".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
-                # Truncate text to avoid exceeding token limits
-                image_text = f"\n[System Extract] User uploaded a PDF document named {file.filename}. Document Text:\n{pdf_text[:4000]}"
+                user_content.append({"type": "text", "text": f"User uploaded a related PDF. Extracted text:\n{pdf_text[:4000]}"})
             except Exception as e:
-                image_text = f"\n[System Extract] User uploaded a PDF document named {file.filename}, but text extraction failed."
-        else:
-            image_text = f"\n[System Extract] User uploaded an image named {file.filename}. Assume it contains suspicious financial urgency text."
+                user_content.append({"type": "text", "text": f"User uploaded a PDF named {file.filename}, but text extraction failed."})
+        elif file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+            import base64
+            img_b64 = base64.b64encode(file_bytes).decode('utf-8')
+            img_mime = file.content_type or "image/jpeg"
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{img_mime};base64,{img_b64}"
+                }
+            })
+            model_name = "llama-3.2-11b-vision-preview"
+            user_content.append({"type": "text", "text": "Please analyze this image. If it's a completely normal or harmless image (like a picture of a baby, nature, normal everyday objects, etc.) that clearly contains no scams, financial deception, or phishing, you MUST classify it as safe and risk_level Low. Do NOT hallucinate scams in innocent photos."})
 
-    if not text_content and not image_text:
+    if not user_content:
         raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot/pdf.")
 
     system_prompt = f"""You are Aegis, a highly advanced cybersecurity AI designed to detect scams, phishing attempts, and AI-generated deceptive content. 
     Analyze the provided text, link description, or extracted image context.
     CRITICAL CONTEXT: The user intercepted this content from the platform: '{platform}'. Keep platform-specific scam typologies in mind (e.g., WhatsApp crypto/job scams, Facebook marketplace clones, Instagram romance/giveaway scams).
     Return a JSON object internally with the shape (DO NOT wrap in markdown ticks, strictly valid JSON): 
-    {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags."}}"""
+    {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags. If it is completely innocent, state so clearly."}}"""
     
-    user_prompt = f"Please analyze this content for scams or AI generation:\n---Content---\n{text_content or ''} {image_text}"
-
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
+        {"role": "user", "content": user_content}
     ]
 
     try:
-        result = call_groq_api(messages, api_key)
+        result = call_groq_api(messages, api_key, model=model_name)
         # Attempt to parse json
         result = result.replace('```json', '').replace('```', '')
         return json.loads(result)
