@@ -38,7 +38,10 @@
                 <i class="fa-solid fa-shield-virus"></i>
                 <h1>AEGIS</h1>
             </div>
-            <button id="settingsBtn" class="glass-btn outline"><i class="fa-solid fa-key"></i> Key Setup</button>
+            <div style="display: flex; gap: 0.8rem;">
+                <button id="aboutBtn" class="glass-btn outline"><i class="fa-solid fa-circle-info"></i> About</button>
+                <button id="settingsBtn" class="glass-btn outline"><i class="fa-solid fa-key"></i> Key Setup</button>
+            </div>
         </header>
 
         <main>
@@ -112,6 +115,20 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <button class="close-btn" id="closeAboutBtn"><i class="fa-solid fa-xmark"></i></button>
+            <h3><i class="fa-solid fa-circle-info"></i> ABOUT AEGIS</h3>
+            <p style="margin-bottom: 1rem;">Aegis was built to protect everyday internet users from the rapidly growing
+                threat of Generative AI deception, deepfakes, and automated scams natively on their mobile devices or
+                laptops.</p>
+            <p>Our core mission is to instantly authenticate reality, allowing you to seamlessly paste suspicious
+                WhatsApp messages, shady Instagram links, false YouTube giveaways, or upload weird banking PDFs into an
+                advanced LLM pipeline to verify their legitimacy.</p>
+        </div>
     </div>
 
     <!-- Settings Modal -->

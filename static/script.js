@@ -1,4 +1,4 @@
-// ------- THREE.JS BACKGROUND (Lusion.co style) -------
+// ------- THREE.JS BACKGROUND (Lusion.co style Data Wave) -------
 const init3DBackground = () => {
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
@@ -9,77 +9,74 @@ const init3DBackground = () => {
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Particle System (Neural Network / Cyber Data Sphere Representation)
-    const geometry = new THREE.BufferGeometry();
-    const particles = 3000;
-    const positions = new Float32Array(particles * 3);
-    const colors = new Float32Array(particles * 3);
+    // Dynamic Undulating Plane (Data Lake / Cyber Mesh)
+    const geometry = new THREE.PlaneGeometry(30, 30, 70, 70);
+    // Rotate to lay almost flat
+    geometry.rotateX(-Math.PI / 2);
 
-    const color1 = new THREE.Color(0x0ea5e9); // Light blue
-    const color2 = new THREE.Color(0x6366f1); // Indigo
-    const color3 = new THREE.Color(0xffffff); // White
-
-    for (let i = 0; i < particles * 3; i += 3) {
-        // Sphere Distribution
-        const r = 10 * Math.cbrt(Math.random());
-        const theta = Math.random() * 2 * Math.PI;
-        const phi = Math.acos(2 * Math.random() - 1);
-
-        positions[i] = r * Math.sin(phi) * Math.cos(theta);
-        positions[i + 1] = r * Math.sin(phi) * Math.sin(theta);
-        positions[i + 2] = r * Math.cos(phi);
-
-        // Colors mixing
-        const mix = Math.random();
-        let c = color1;
-        if (mix > 0.6) c = color2;
-        if (mix > 0.9) c = color3;
-
-        colors[i] = c.r;
-        colors[i + 1] = c.g;
-        colors[i + 2] = c.b;
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    // Custom Shader Material for glowing dots
+    // Custom Material for glowing mesh knots
     const material = new THREE.PointsMaterial({
         size: 0.04,
-        vertexColors: true,
+        color: 0x0ea5e9,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.8,
         blending: THREE.AdditiveBlending
     });
 
     const particleSystem = new THREE.Points(geometry, material);
     scene.add(particleSystem);
-    camera.position.z = 15;
+
+    // Position camera dynamically via animation
+    camera.position.y = 3;
+    camera.position.z = 8;
+    camera.lookAt(0, 0, 0);
 
     // Mouse Interaction
     let mouseX = 0;
     let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
 
     document.addEventListener('mousemove', (e) => {
-        mouseX = (e.clientX - window.innerWidth / 2) * 0.001;
-        mouseY = (e.clientY - window.innerHeight / 2) * 0.001;
+        mouseX = (e.clientX - window.innerWidth / 2) * 0.002;
+        mouseY = (e.clientY - window.innerHeight / 2) * 0.002;
     });
+
+    // Save the original vertices for deformation baseline
+    const positionAttribute = geometry.attributes.position;
+    const vertexCount = positionAttribute.count;
+    const originalPositions = new Float32Array(vertexCount * 3);
+    for (let i = 0; i < vertexCount * 3; i++) {
+        originalPositions[i] = positionAttribute.array[i];
+    }
+
+    // Control parameters for the wave geometry
+    let waveParams = {
+        speed: 1,
+        height: 0.5,
+        frequency: 0.5
+    };
 
     const animate = () => {
         requestAnimationFrame(animate);
 
-        // Smooth Mouse Follow Interpolation
-        targetX = mouseX * 2;
-        targetY = mouseY * 2;
+        const time = Date.now() * 0.001 * waveParams.speed;
 
-        particleSystem.rotation.x += 0.001 + (targetY - particleSystem.rotation.x) * 0.02;
-        particleSystem.rotation.y += 0.002 + (targetX - particleSystem.rotation.y) * 0.02;
+        // Animate the plane vertices to create an undulating wave
+        for (let i = 0; i < vertexCount; i++) {
+            const px = originalPositions[i * 3];
+            const pz = originalPositions[i * 3 + 2];
 
-        // Subtle pulsing
-        const time = Date.now() * 0.0005;
-        material.size = 0.04 + Math.sin(time) * 0.01;
+            // Generate a sin/cos wave interference pattern on the Y axis
+            const waveY = Math.sin((px * waveParams.frequency) + time) * waveParams.height +
+                Math.cos((pz * waveParams.frequency) + time) * waveParams.height;
+
+            positionAttribute.setY(i, waveY);
+        }
+        positionAttribute.needsUpdate = true;
+
+        // Smooth Camera Follow
+        camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+        camera.position.y += (3 - mouseY * 5 - camera.position.y) * 0.05;
+        camera.lookAt(0, 0, 0);
 
         renderer.render(scene, camera);
     };
@@ -95,10 +92,16 @@ const init3DBackground = () => {
 
     // Expose Global Color Transition function for Results
     window.transitionParticles = (isScam) => {
-        const targetColor = isScam ? new THREE.Color(0xef4444) : new THREE.Color(0x10b981); // Red or Green
-        // Particles rotate extremely fast violently for scam, or slow for safe
+        const targetColor = isScam ? new THREE.Color(0xef4444) : new THREE.Color(0x10b981);
         gsap.to(material.color, { r: targetColor.r, g: targetColor.g, b: targetColor.b, duration: 1.5, ease: "power2.out" });
-        gsap.to(material, { size: isScam ? 0.08 : 0.04, duration: 1 });
+        // Make the waves spike aggressively if it's a scam, or become smooth if safe
+        gsap.to(waveParams, {
+            speed: isScam ? 4 : 0.5,
+            height: isScam ? 2.5 : 0.2, // Huge violent spikes for scams
+            frequency: isScam ? 1.5 : 0.3,
+            duration: 1.5,
+            ease: "power2.out"
+        });
     };
 };
 
@@ -156,11 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. Modal Flow
     const apiModal = document.getElementById('apiModal');
+    const aboutModal = document.getElementById('aboutModal');
+
     document.getElementById('settingsBtn').onclick = () => {
         apiModal.classList.remove('hidden');
         gsap.fromTo(apiModal.querySelector('.modal-content'), { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" });
     };
-    document.querySelector('.close-btn').onclick = () => apiModal.classList.add('hidden');
+    document.querySelector('#apiModal .close-btn').onclick = () => apiModal.classList.add('hidden');
+
+    document.getElementById('aboutBtn').onclick = () => {
+        aboutModal.classList.remove('hidden');
+        gsap.fromTo(aboutModal.querySelector('.modal-content'), { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" });
+    };
+    document.getElementById('closeAboutBtn').onclick = () => aboutModal.classList.add('hidden');
 
     document.getElementById('saveApiBtn').onclick = () => {
         const key = document.getElementById('userApiKey').value.trim();
