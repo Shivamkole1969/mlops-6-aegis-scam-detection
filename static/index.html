@@ -1,86 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis | AI & Scam Content Detector</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Aegis | Advanced AI Fraud Detector</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Local CSS (Ensure absolute root path for HF Spaces) -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 3D Graphics and Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
+
 <body>
-    <div class="glass-container">
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <div class="ui-layer">
         <header>
             <div class="logo">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <h1>Aegis <span>Detector</span></h1>
+                <i class="fa-solid fa-shield-virus"></i>
+                <h1><span style="font-weight: 300;">AEGIS</span> // DETECT</h1>
             </div>
-            <button id="settingsBtn" class="btn outline">API Settings</button>
+            <button id="settingsBtn" class="glass-btn outline"><i class="fa-solid fa-key"></i> Key Setup</button>
         </header>
 
         <main>
-            <div class="hero">
-                <h2>Protect Yourself From Generative AI Scams</h2>
-                <p>Paste suspicious texts, links, bank SMS, or upload screenshots to instantly detect deepfakes, phishing, and generative AI content using Groq LLM pipelines.</p>
-            </div>
+            <h2 class="hero-title">AUTHENTICATE REALITY.</h2>
+            <p class="hero-subtitle">Bypass platform deception. Paste any link, screenshot, or text from WhatsApp,
+                Instagram, or Reddit to instantly uncover generative AI scams using advanced LLM pipelines.</p>
 
-            <div class="analyzer-box">
+            <div class="cyber-panel">
                 <div class="tabs">
-                    <button class="tab active" data-target="text-input">Text / Link</button>
-                    <button class="tab" data-target="image-input">Upload Media</button>
+                    <button class="tab active" data-target="text-input"><i class="fa-solid fa-link"></i> Text / URL
+                        Context</button>
+                    <button class="tab" data-target="image-input"><i class="fa-solid fa-camera"></i> Upload
+                        Evidence</button>
+                </div>
+
+                <div class="platform-selector">
+                    <p class="selector-label">SELECT SOURCE PLATFORM CONTEXT:</p>
+                    <div class="platforms" id="platformGrid">
+                        <div class="platform-btn" data-platform="WhatsApp"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div class="platform-btn" data-platform="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                        <div class="platform-btn" data-platform="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                        <div class="platform-btn" data-platform="Reddit"><i class="fa-brands fa-reddit-alien"></i></div>
+                        <div class="platform-btn" data-platform="YouTube"><i class="fa-brands fa-youtube"></i></div>
+                        <div class="platform-btn" data-platform="Pinterest"><i class="fa-brands fa-pinterest-p"></i>
+                        </div>
+                        <div class="platform-btn active" data-platform="Web/General"><i class="fa-solid fa-globe"></i>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="input-area active" id="text-input">
-                    <textarea id="textContent" placeholder="Paste the suspicious link, bank message, or email here..."></textarea>
+                    <textarea id="textContent"
+                        placeholder="Paste the suspicious content, scamming DM, phishing link, or urgency request..."></textarea>
                 </div>
 
                 <div class="input-area" id="image-input">
                     <div class="upload-zone" id="uploadZone">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <p>Drag & Drop screenshot or click to browse</p>
+                        <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                        <p>Drop visual evidence here (screenshot, receipt, profile capture)</p>
                         <input type="file" id="fileInput" accept="image/*" hidden>
                     </div>
                     <div id="fileNameDisplay" class="file-name"></div>
                 </div>
 
-                <button id="analyzeBtn" class="btn primary full-width">
-                    <span class="btn-text">Run Security Analysis</span>
+                <button id="analyzeBtn" class="cyber-btn full-width">
+                    <span class="btn-text">INITIATE NEURAL ANALYSIS</span>
                     <span class="loader hidden"></span>
                 </button>
             </div>
 
-            <!-- Results Section -->
+            <!-- Analysis Output -->
             <div id="resultBox" class="result-box hidden">
-                <div class="risk-badge" id="riskBadge">High Risk</div>
+                <div class="result-header">
+                    <div class="risk-badge" id="riskBadge">HIGH RISK</div>
+                    <h3><i class="fa-solid fa-microchip"></i> INFERENCE COMPLETE</h3>
+                </div>
+
                 <div class="grid-stats">
                     <div class="stat">
-                        <span class="label">AI Generated?</span>
+                        <span class="label">Generative AI Detected?</span>
                         <span class="value" id="aiGeneratedStatus">Yes</span>
                     </div>
                     <div class="stat">
-                        <span class="label">Scam Detected?</span>
+                        <span class="label">Fraudulent Typology</span>
                         <span class="value" id="scamDetectedStatus">Yes</span>
                     </div>
                 </div>
                 <div class="explanation">
-                    <h3>Analysis Breakdown:</h3>
-                    <p id="analysisText">Loading explanation...</p>
+                    <p id="analysisText">Awaiting breakdown...</p>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- API Key Modal -->
+    <!-- Settings Modal -->
     <div id="apiModal" class="modal hidden">
         <div class="modal-content glass-panel">
-            <span class="close-btn">&times;</span>
-            <h3>Custom API Configuration</h3>
-            <p>Aegis provides built-in Groq keys. However, for private instances, you can temporarily supply your own API Key.</p>
-            <input type="password" id="userApiKey" placeholder="gsk_YourAPIKeyHere...">
-            <button id="saveApiBtn" class="btn primary">Save Configuration</button>
+            <button class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <h3><i class="fa-solid fa-lock"></i> API KEY OVERRIDE</h3>
+            <p>Aegis runs on public Groq keys. Provide your own if rate-limited during heavy traffic.</p>
+            <input type="password" id="userApiKey" placeholder="gsk_XXXXXXXXXXXXXXXXXXXXXXXX">
+            <button id="saveApiBtn" class="glass-btn primary full-width">AUTHORIZE & SAVE</button>
             <div id="apiStatus" class="api-status"></div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/static/script.js"></script>
 </body>
+
 </html>

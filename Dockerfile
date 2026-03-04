@@ -1,14 +1,14 @@
-FROM python:3.9-slim
+# Read the doc: https://huggingface.co/docs/hub/spaces-sdks-docker
+FROM python:3.9
 
-WORKDIR /code
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 
-COPY ./requirements.txt /code/requirements.txt
+WORKDIR /app
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY --chown=user ./requirements.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-COPY ./ /code/app
-
-# Since standard is to mount to /code/app
-WORKDIR /code/app
-
+COPY --chown=user . /app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

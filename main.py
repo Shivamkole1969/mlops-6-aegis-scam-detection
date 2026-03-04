@@ -54,6 +54,7 @@ async def serve_frontend():
 @app.post("/api/analyze")
 async def analyze_content(
     text_content: Optional[str] = Form(None),
+    platform: Optional[str] = Form("Web/General"),
     user_api_key: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None)
 ):
@@ -70,10 +71,11 @@ async def analyze_content(
     if not text_content and not image_text:
         raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot.")
 
-    system_prompt = """You are Aegis, a highly advanced cybersecurity AI designed to detect scams, phishing attempts, and AI-generated deceptive content. 
+    system_prompt = f"""You are Aegis, a highly advanced cybersecurity AI designed to detect scams, phishing attempts, and AI-generated deceptive content. 
     Analyze the provided text, link description, or extracted image context.
+    CRITICAL CONTEXT: The user intercepted this content from the platform: '{platform}'. Keep platform-specific scam typologies in mind (e.g., WhatsApp crypto/job scams, Facebook marketplace clones, Instagram romance/giveaway scams).
     Return a JSON object internally with the shape (DO NOT wrap in markdown ticks, strictly valid JSON): 
-    {"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags."}"""
+    {{"risk_level": "High|Medium|Low", "is_scam": true/false, "is_ai_generated": true/false, "explanation": "Detailed professional breakdown of why this is or isn't a scam, highlighting red flags."}}"""
     
     user_prompt = f"Please analyze this content for scams or AI generation:\n---Content---\n{text_content or ''} {image_text}"
 
