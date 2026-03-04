@@ -7,7 +7,8 @@ import json
 import base64
 import os
 import requests
-
+import io
+import PyPDF2
 app = FastAPI(title="Aegis - Scam & AI Content Detector", version="1.0.0")
 
 app.add_middleware(
@@ -66,10 +67,19 @@ async def analyze_content(
     # In a real multimodal (vision) setup, we would run OCR or pass base64 image to an LlaVA/vision model
     image_text = ""
     if file:
-        image_text = f"\n[System Extract] User uploaded an image named {file.filename}. Assume it contains suspicious financial urgency text."
+        if file.filename.lower().endswith('.pdf'):
+            try:
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(await file.read()))
+                pdf_text = "\n".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
+                # Truncate text to avoid exceeding token limits
+                image_text = f"\n[System Extract] User uploaded a PDF document named {file.filename}. Document Text:\n{pdf_text[:4000]}"
+            except Exception as e:
+                image_text = f"\n[System Extract] User uploaded a PDF document named {file.filename}, but text extraction failed."
+        else:
+            image_text = f"\n[System Extract] User uploaded an image named {file.filename}. Assume it contains suspicious financial urgency text."
 
     if not text_content and not image_text:
-        raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot.")
+        raise HTTPException(status_code=400, detail="Provide text content, a link, or upload a screenshot/pdf.")
 
     system_prompt = f"""You are Aegis, a highly advanced cybersecurity AI designed to detect scams, phishing attempts, and AI-generated deceptive content. 
     Analyze the provided text, link description, or extracted image context.

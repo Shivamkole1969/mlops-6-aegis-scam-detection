@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis | Advanced AI Fraud Detector</title>
+    <title>AEGIS</title>
     <!-- Modern Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,21 +31,22 @@
         <header>
             <div class="logo">
                 <i class="fa-solid fa-shield-virus"></i>
-                <h1><span style="font-weight: 300;">AEGIS</span> // DETECT</h1>
+                <h1>AEGIS</h1>
             </div>
             <button id="settingsBtn" class="glass-btn outline"><i class="fa-solid fa-key"></i> Key Setup</button>
         </header>
 
         <main>
             <h2 class="hero-title">AUTHENTICATE REALITY.</h2>
-            <p class="hero-subtitle">Bypass platform deception. Paste any link, screenshot, or text from WhatsApp,
+            <p class="hero-subtitle">Bypass platform deception. Paste any link, screenshot, document, or text from
+                WhatsApp,
                 Instagram, or Reddit to instantly uncover generative AI scams using advanced LLM pipelines.</p>
 
             <div class="cyber-panel">
                 <div class="tabs">
                     <button class="tab active" data-target="text-input"><i class="fa-solid fa-link"></i> Text / URL
                         Context</button>
-                    <button class="tab" data-target="image-input"><i class="fa-solid fa-camera"></i> Upload
+                    <button class="tab" data-target="image-input"><i class="fa-solid fa-file-arrow-up"></i> Upload
                         Evidence</button>
                 </div>
 
@@ -72,8 +73,8 @@
                 <div class="input-area" id="image-input">
                     <div class="upload-zone" id="uploadZone">
                         <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
-                        <p>Drop visual evidence here (screenshot, receipt, profile capture)</p>
-                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <p>Drop visual evidence here (screenshot, receipt, profile capture, PDF)</p>
+                        <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>
                     </div>
                     <div id="fileNameDisplay" class="file-name"></div>
                 </div>
